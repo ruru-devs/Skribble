@@ -1,0 +1,21 @@
+{
+  "name": "Skribble",
+  "short_name": "Skribble",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
+  "description": "Minimalist dark-mode journal & notes with serverless Google Drive sync, voice clips, and rich text.",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

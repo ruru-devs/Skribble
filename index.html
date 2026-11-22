@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Skribble - Note Taking Web App</title>
+  <meta name="description" content="Personal dark-mode notes with Google Drive auto-sync, voice notes, and rich formatting.">
+  <meta name="theme-color" content="#0d0f12">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="brand-area">
+        <h1 class="logo-text">skribble</h1>
+        <div id="syncStatusBadge" class="status-badge" title="Sync Status">
+          <span class="status-dot"></span>
+          <span class="status-label">Offline</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="searchToggleBtn" class="icon-btn" aria-label="Search notes" title="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="icon-btn" aria-label="Settings" title="Settings & Drive Sync">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Bar Dropdown -->
+    <div id="searchBarContainer" class="search-bar-container hidden">
+      <input type="text" id="searchInput" placeholder="Search notes, tags, content..." autocomplete="off">
+      <button id="searchClearBtn" class="clear-btn">&times;</button>
+    </div>
+
+    <!-- Main Content Area: Notes List View -->
+    <main id="listView" class="view-panel active">
+      <!-- Decorative Banner -->
+      <section class="banner-card">
+        <div class="banner-overlay">
+          <span class="banner-tag">Personal Journal</span>
+          <h2 class="banner-title" id="bannerGreeting">Notes & Reflections</h2>
+          <p class="banner-subtitle" id="bannerStats">Loading your notes...</p>
+        </div>
+      </section>
+
+      <!-- Note Feed Container -->
+      <section id="notesFeed" class="notes-feed">
+        <!-- Rendered dynamically -->
+      </section>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">📝</div>
+        <h3>No notes yet</h3>
+        <p>Tap the green + button below to create your first note.</p>
+      </div>
+    </main>
+
+    <!-- Main Content Area: Timeline / Calendar View -->
+    <main id="calendarView" class="view-panel hidden">
+      <div class="calendar-header">
+        <h2>Timeline</h2>
+        <p class="section-desc">Organized by date and month</p>
+      </div>
+      <div id="timelineContainer" class="timeline-container">
+        <!-- Grouped by month dynamically -->
+      </div>
+    </main>
+
+    <!-- Note Editor View (Full Overlay) -->
+    <section id="editorView" class="editor-overlay hidden">
+      <div class="editor-header">
+        <button id="editorBackBtn" class="icon-btn" aria-label="Back to notes">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div class="editor-meta">
+          <span id="editorDateText" class="editor-date">Today</span>
+          <span id="editorSaveStatus" class="editor-save-status">Saved</span>
+        </div>
+        <div class="editor-header-actions">
+          <button id="exportNoteBtn" class="icon-btn" title="Export as .skrib file" aria-label="Export">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+          <button id="deleteNoteBtn" class="icon-btn danger" title="Delete note" aria-label="Delete">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button id="editorDoneBtn" class="btn-done">Done</button>
+        </div>
+      </div>
+
+      <!-- Editor Formatting Toolbar -->
+      <div class="formatting-toolbar">
+        <button type="button" class="tool-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button type="button" class="tool-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button type="button" class="tool-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button type="button" class="tool-btn" data-command="strikeThrough" title="Strikethrough"><s>S</s></button>
+        <button type="button" class="tool-btn" data-command="formatBlock" data-val="pre" title="Monospace / Code"><code>&lt;/&gt;</code></button>
+        
+        <!-- Highlight color dropdown toggle -->
+        <div class="dropdown-wrapper">
+          <button type="button" id="highlightToolBtn" class="tool-btn highlight-tool" title="Highlight text">
+            <span class="highlight-bar">A</span>
+          </button>
+          <div id="highlightPalette" class="color-palette hidden">
+            <button type="button" class="color-dot" data-color="#2dd4bf" style="background:#2dd4bf;" title="Teal"></button>
+            <button type="button" class="color-dot" data-color="#4ade80" style="background:#4ade80;" title="Light Green"></button>
+            <button type="button" class="color-dot" data-color="#facc15" style="background:#facc15;" title="Yellow"></button>
+            <button type="button" class="color-dot" data-color="#fb923c" style="background:#fb923c;" title="Orange"></button>
+            <button type="button" class="color-dot" data-color="#f472b6" style="background:#f472b6;" title="Pink"></button>
+            <button type="button" class="color-dot" data-color="#a78bfa" style="background:#a78bfa;" title="Purple"></button>
+            <button type="button" class="color-dot" data-color="transparent" style="background:#333; border:1px solid #777;" title="Clear"></button>
+          </div>
+        </div>
+
+        <span class="toolbar-separator"></span>
+
+        <!-- Hyperlink button -->
+        <button type="button" id="insertLinkBtn" class="tool-btn" title="Insert Hyperlink">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </button>
+
+        <!-- Image upload button -->
+        <label class="tool-btn file-label" title="Attach Image">
+          <input type="file" id="imageInput" accept="image/*" multiple hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </label>
+
+        <!-- Voice recording button -->
+        <button type="button" id="recordVoiceBtn" class="tool-btn voice-record-btn" title="Record Voice Note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Live Voice Recording Banner (appears when recording) -->
+      <div id="recordingBanner" class="recording-banner hidden">
+        <div class="recording-indicator">
+          <span class="rec-dot"></span>
+          <span class="rec-text">Recording Audio...</span>
+          <span id="recordingTimer" class="rec-time">00:00</span>
+        </div>
+        <div class="rec-actions">
+          <button type="button" id="cancelRecordBtn" class="btn-secondary small">Cancel</button>
+          <button type="button" id="stopRecordBtn" class="btn-accent small">Save Clip</button>
+        </div>
+      </div>
+
+      <!-- Editor Content Body -->
+      <div class="editor-scroll-area">
+        <input type="text" id="noteTitleInput" class="editor-title-input" placeholder="Note Title..." autocomplete="off">
+        
+        <!-- Attached Voice Notes Section -->
+        <div id="voiceNotesSection" class="attachments-section hidden">
+          <h4 class="section-title">Voice Notes</h4>
+          <div id="voiceNotesList" class="voice-notes-list"></div>
+        </div>
+
+        <!-- Attached Images Section -->
+        <div id="attachedImagesSection" class="attachments-section hidden">
+          <h4 class="section-title">Attached Photos</h4>
+          <div id="attachedImagesList" class="attached-images-grid"></div>
+        </div>
+
+        <!-- Rich Text Editable Area -->
+        <div id="noteContentEditor" class="editor-content-area" contenteditable="true" spellcheck="true" placeholder="Start typing your note..."></div>
+
+        <!-- Tags Area -->
+        <div class="tags-input-container">
+          <span class="tags-label">Tags:</span>
+          <div id="tagsList" class="tags-badge-list"></div>
+          <input type="text" id="tagInputField" class="tag-input" placeholder="Add tag + Enter...">
+        </div>
+      </div>
+    </section>
+
+    <!-- Floating Action Button (New Note) -->
+    <button id="floatingAddBtn" class="fab-btn" aria-label="Add new note">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="listView">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <span>Notes</span>
+      </button>
+      <button class="nav-item" data-view="calendarView">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Timeline</span>
+      </button>
+      <button id="settingsNavBtn" class="nav-item" data-action="settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="1"></circle>
+          <circle cx="19" cy="12" r="1"></circle>
+          <circle cx="5" cy="12" r="1"></circle>
+        </svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <!-- Hyperlink Preview / Action Popup -->
+    <div id="linkPreviewPopup" class="link-preview-popup hidden">
+      <div class="link-preview-content">
+        <div class="link-preview-icon">🔗</div>
+        <div class="link-preview-details">
+          <div id="linkPreviewTitle" class="link-preview-title">Link Preview</div>
+          <div id="linkPreviewUrl" class="link-preview-url">https://...</div>
+        </div>
+      </div>
+      <div class="link-preview-actions">
+        <button id="linkPreviewOpenBtn" class="btn-accent small">Open</button>
+        <button id="linkPreviewRemoveBtn" class="btn-secondary small danger-text">Remove</button>
+        <button id="linkPreviewCloseBtn" class="icon-btn small">&times;</button>
+      </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="imageLightbox" class="lightbox-modal hidden">
+      <div class="lightbox-backdrop"></div>
+      <div class="lightbox-content">
+        <img id="lightboxImg" src="" alt="Enlarged view">
+        <button id="lightboxCloseBtn" class="lightbox-close">&times;</button>
+      </div>
+    </div>
+
+    <!-- Settings & Google Drive Sync Modal -->
+    <div id="settingsModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Google Drive & App Settings</h3>
+          <button id="settingsModalCloseBtn" class="icon-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description">
+            Connect your own Google Apps Script webhook to automatically sync and store <code>.skrib</code> files in your Google Drive in real-time.
+          </p>
+
+          <form id="settingsForm">
+            <div class="form-group">
+              <label for="gasUrlInput">Google Apps Script Web App URL</label>
+              <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+              <small class="form-hint">Deploy <code>gas/script.gs</code> as a Web App (Execute as: Me, Access: Anyone).</small>
+            </div>
+
+            <div class="form-group">
+              <label for="gasKeyInput">Secret Passkey / Access Key</label>
+              <input type="password" id="gasKeyInput" placeholder="Enter your secret key" autocomplete="off">
+              <small class="form-hint">Stored securely on this device's local storage.</small>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" id="testSyncBtn" class="btn-secondary">Test Connection</button>
+              <button type="submit" id="saveSettingsBtn" class="btn-accent">Save & Connect</button>
+            </div>
+          </form>
+
+          <div id="settingsFeedback" class="feedback-banner hidden"></div>
+
+          <hr class="divider">
+
+          <div class="backup-tools">
+            <h4>Local Backup & Restore</h4>
+            <div class="backup-btn-row">
+              <button type="button" id="exportAllJsonBtn" class="btn-outline">Export All Notes (.json)</button>
+              <label class="btn-outline file-label">
+                Import .skrib Note
+                <input type="file" id="importSkribInput" accept=".skrib,.json" hidden>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
